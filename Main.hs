@@ -30,8 +30,16 @@ data LifeGame = Game
   } deriving Show 
 
 -- Tile functions
+isTileAlive x y g = getTile x y g == 'x'
+numNeighbours x y g = length $ filter (==True) $ map (\(x,y) -> isTileAlive x y g) $ neighbours x y 
+
+neighbours x y = [(x-1, y-1), (x-1, y), (x-1, y+1), (x, y-1), (x, y+1), (x+1, y-1), (x+1, y), (x+1, y+1)]
+
 getTile :: Int -> Int -> LifeGame -> Char
 getTile x y g = (level g) !! y !! x
+
+setTileDead x y g = setTile x y '_' g
+setTileAlive x y g = setTile x y 'x' g
 
 setTile :: Int -> Int -> Char -> LifeGame -> LifeGame
 setTile x y c g = g { level = updatedLevel}
@@ -83,10 +91,23 @@ handleKeys _ game = game
 update :: Float -> LifeGame -> LifeGame
 update secs game
  | (paused game)               = game
- | otherwise                   = updateSeconds game
+ | otherwise                   = updateLevel $ updateSeconds game
 
 updateSeconds :: LifeGame -> LifeGame
 updateSeconds game = game {seconds = (seconds game) + 1}
+
+updateLevel :: LifeGame -> LifeGame
+updateLevel g = g -- TODO
+
+updateCell x y g
+ | live && neighbours < 2 = setTileDead x y g
+ | live && neighbours >= 2 && neighbours <= 3 = g
+ | live && neighbours > 3 = setTileDead x y g
+ | not live && neighbours == 3 = setTileAlive x y g
+ | otherwise = g
+  where 
+    live = isTileAlive x y g
+    neighbours = numNeighbours x y g
 
 wrapx x
  | x < 0 = maxTileHoriz
