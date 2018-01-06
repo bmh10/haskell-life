@@ -30,7 +30,10 @@ data LifeGame = Game
   } deriving Show 
 
 -- Tile functions
-isTileAlive x y g = getTile x y g == 'x'
+isTileAlive x y g 
+ | x < 0 || y < 0 || x > maxTileHoriz || y > 25 = False
+ | otherwise = getTile x y g == 'x'
+
 numNeighbours x y g = length $ filter (==True) $ map (\(x,y) -> isTileAlive x y g) $ neighbours x y 
 
 neighbours x y = [(x-1, y-1), (x-1, y), (x-1, y+1), (x, y-1), (x, y+1), (x+1, y-1), (x+1, y), (x+1, y+1)]
@@ -44,9 +47,6 @@ setTileAlive x y g = setTile x y 'x' g
 setTile :: Int -> Int -> Char -> LifeGame -> LifeGame
 setTile x y c g = g { level = updatedLevel}
   where updatedLevel = setAtIdx y (setAtIdx x c ((level g) !! y)) (level g)
-
-onTick :: LifeGame -> Bool -> Int -> a -> a -> a 
-onTick g c t a b = if (c && (mod (round (seconds g)) t) == 0) then a else b
 
 -- Map tile coords ((0,0) is top-left tile) to actual screen coords ((0, 0) is center of screen)
 tileToCoord :: (Int, Int) -> (Float, Float) 
@@ -97,7 +97,8 @@ updateSeconds :: LifeGame -> LifeGame
 updateSeconds game = game {seconds = (seconds game) + 1}
 
 updateLevel :: LifeGame -> LifeGame
-updateLevel g = g -- TODO
+updateLevel g = foldr (\(x,y) -> updateCell x y) g coords
+  where coords = [(x, y) | x <- [0..30], y <- [0..30]]
 
 updateCell x y g
  | live && neighbours < 2 = setTileDead x y g
