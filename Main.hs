@@ -97,15 +97,18 @@ updateSeconds :: LifeGame -> LifeGame
 updateSeconds game = game {seconds = (seconds game) + 1}
 
 updateLevel :: LifeGame -> LifeGame
-updateLevel g = foldr (\(x,y) -> updateCell x y) g coords
-  where coords = [(x, y) | x <- [0..30], y <- [0..30]]
+updateLevel g = foldr (\(x,y) -> updateCell x y g) g' coords
+  where
+    coords = [(x, y) | x <- [0..30], y <- [0..30]]
+    g' = g -- g is initial state, g' is next state
+  
 
-updateCell x y g
- | live && neighbours < 2 = setTileDead x y g
- | live && neighbours >= 2 && neighbours <= 3 = g
- | live && neighbours > 3 = setTileDead x y g
- | not live && neighbours == 3 = setTileAlive x y g
- | otherwise = g
+updateCell x y g g'
+ | live && neighbours < 2 = setTileDead x y g'
+ | live && neighbours >= 2 && neighbours <= 3 = g'
+ | live && neighbours > 3 = setTileDead x y g'
+ | not live && neighbours == 3 = setTileAlive x y g'
+ | otherwise = g'
   where 
     live = isTileAlive x y g
     neighbours = numNeighbours x y g
