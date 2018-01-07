@@ -26,8 +26,7 @@ background = black
 data LifeGame = Game
   { 
     level :: [String],
-    seconds :: Float,            -- Game timer
-    paused :: Bool              -- Paused or not
+    paused :: Bool
   } deriving Show 
 
 -- Tile functions
@@ -93,17 +92,13 @@ handleKeys _ game = game
 update :: Float -> LifeGame -> LifeGame
 update secs game
  | (paused game)               = game
- | otherwise                   = updateLevel $ updateSeconds game
-
-updateSeconds :: LifeGame -> LifeGame
-updateSeconds game = game {seconds = (seconds game) + 1}
+ | otherwise                   = updateLevel game
 
 updateLevel :: LifeGame -> LifeGame
 updateLevel g = foldr (\(x,y) -> updateCell x y g) g' coords
   where
     coords = [(x, y) | x <- [0..maxTileX], y <- [0..maxTileY]]
     g' = g -- g is initial state, g' is next state
-  
 
 updateCell x y g g'
  | live && neighbours < 2 = setTileDead x y g'
@@ -127,7 +122,7 @@ initTiles = do
   fileContents <- readFile "seed.txt"
   let all = words fileContents
  
-  let initialState = Game { level = all, seconds = 0, paused = False }
+  let initialState = Game { level = all, paused = False }
   print all
   return initialState
 
