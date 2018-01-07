@@ -18,7 +18,8 @@ height = 465 + dashboardHeight -- 31 * 15
 dashboardHeight = 20
 offset = 100
 tileSize = 15
-maxTileHoriz = 27
+maxTileX = 27
+maxTileY = 27
 window = InWindow "Life" (width, height) (offset, offset)
 background = black
 
@@ -30,9 +31,10 @@ data LifeGame = Game
   } deriving Show 
 
 -- Tile functions
-isTileAlive x y g 
- | x < 0 || y < 0 || x > maxTileHoriz || y > 25 = False
- | otherwise = getTile x y g == 'x'
+isTileAlive x y g = getTile wx wy g == 'x'
+  where
+    wx = wrapx x
+    wy = wrapy y
 
 numNeighbours x y g = length $ filter (==True) $ map (\(x,y) -> isTileAlive x y g) $ neighbours x y 
 
@@ -99,7 +101,7 @@ updateSeconds game = game {seconds = (seconds game) + 1}
 updateLevel :: LifeGame -> LifeGame
 updateLevel g = foldr (\(x,y) -> updateCell x y g) g' coords
   where
-    coords = [(x, y) | x <- [0..30], y <- [0..30]]
+    coords = [(x, y) | x <- [0..maxTileX], y <- [0..maxTileY]]
     g' = g -- g is initial state, g' is next state
   
 
@@ -113,10 +115,13 @@ updateCell x y g g'
     live = isTileAlive x y g
     neighbours = numNeighbours x y g
 
-wrapx x
- | x < 0 = maxTileHoriz
- | x > maxTileHoriz = 0
- | otherwise = x
+wrapx x = wrap x maxTileX
+wrapy y = wrap y maxTileY
+
+wrap p max
+ | p < 0 = max
+ | p > max = 0
+ | otherwise = p
 
 initTiles = do 
   fileContents <- readFile "seed.txt"
