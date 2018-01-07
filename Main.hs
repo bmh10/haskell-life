@@ -10,7 +10,7 @@ import Data.Fixed
 import Data.List
 import Data.Maybe
 
-fps = 5
+fps = 2
 numLevels = 4
 pointsPerLevel = 10
 width = 420 -- 28 * 15
