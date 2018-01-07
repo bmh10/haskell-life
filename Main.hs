@@ -63,9 +63,9 @@ render g = pictures [renderLevel g,
                      renderDashboard g]
 
 renderDashboard :: LifeGame -> Picture
-renderDashboard g = scorePic
+renderDashboard g = statsPic
   where
-    scorePic = color white $ translate (-30) (-fromIntegral height/2 + 5) $ scale 0.1 0.1 $ text $ "Dashboard"
+    statsPic = color white $ translate (-30) (-fromIntegral height/2 + 5) $ scale 0.1 0.1 $ text $ "FPS: " ++ show fps ++ " Alive: ?"
 
 renderLevel :: LifeGame -> Picture
 renderLevel game = renderLines (level game) 0
