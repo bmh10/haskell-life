@@ -119,7 +119,7 @@ wrap p max
  | otherwise = p
 
 initTiles = do 
-  fileContents <- readFile "seed.txt"
+  fileContents <- readFile "seed2.txt"
   let all = words fileContents
  
   let initialState = Game { level = all, paused = False }
