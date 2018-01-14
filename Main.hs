@@ -2,6 +2,7 @@ module Main where
 
 import Graphics.Gloss
 import qualified Graphics.Gloss.Game as GG
+import Graphics.Gloss.Data.Color as GGCol
 import Graphics.Gloss.Data.ViewPort
 import Graphics.Gloss.Interface.Pure.Game
 import System.IO  
@@ -27,7 +28,8 @@ data LifeGame = Game
   { 
     level :: [String],
     initialLevel :: [String],
-    paused :: Bool
+    paused :: Bool,
+    color :: GGCol
   } deriving Show 
 
 -- Tile functions
@@ -71,19 +73,19 @@ renderDashboard g = statsPic
     statsPic = color white $ translate (-30) (-fromIntegral height/2 + 5) $ scale 0.1 0.1 $ text $ "FPS: " ++ show fps ++ " Alive: " ++ show (getAliveCount g)
 
 renderLevel :: LifeGame -> Picture
-renderLevel game = renderLines (level game) 0
+renderLevel game = renderLines (level game) 0 (color game)
 
-renderLines :: [String] -> Int -> Picture
-renderLines [] _ = blank
-renderLines (l:ls) y = pictures [renderLine l 0 y, renderLines ls (y+1)]
+renderLines :: [String] -> Int -> GGCol -> Picture
+renderLines [] _ _ = blank
+renderLines (l:ls) y c = pictures [renderLine l 0 y c, renderLines ls (y+1) c]
 
-renderLine :: String -> Int -> Int -> Picture
-renderLine [] _ _      = blank
-renderLine (t:ts) x y  = pictures [renderTile t x y, renderLine ts (x+1) y]
+renderLine :: String -> Int -> Int -> GGCol -> Picture
+renderLine [] _ _ _      = blank
+renderLine (t:ts) x y c  = pictures [renderTile t x y c, renderLine ts (x+1) y c]
 
-renderTile :: Char -> Int -> Int -> Picture
-renderTile c x y
- | c == 'x'  = translate x' y' $ color blue $ rectangleSolid (tileSize-1) (tileSize-1)
+renderTile :: Char -> Int -> Int -> GGCol -> Picture
+renderTile c x y col
+ | c == 'x'  = translate x' y' $ color col $ rectangleSolid (tileSize-1) (tileSize-1)
  | otherwise = blank
   where
     (x', y') = tileToCoord (x, y)
@@ -92,6 +94,7 @@ renderTile c x y
 handleKeys :: Event -> LifeGame -> LifeGame
 handleKeys (EventKey (Char 'p') Down _ _) g = g {paused = not (paused g)}
 handleKeys (EventKey (Char 'r') Down _ _) g = resetLevel g
+handleKeys (EventKey (Char 'c') Down _ _) g = nextColoror g
 handleKeys _ game = game
 
 update :: Float -> LifeGame -> LifeGame
@@ -124,12 +127,17 @@ wrap p max
  | otherwise = p
 
 resetLevel g = g { level = (initialLevel g) }
+nextColoror g  = g { color = incColor (color g)}
+  where 
+    incColor blue = red
+    incColor red  = green
+    incColor _    = blue
 
 initTiles = do 
   fileContents <- readFile "seed2.txt"
   let all = words fileContents
  
-  let initialState = Game { level = all, initialLevel = all, paused = False }
+  let initialState = Game { level = all, initialLevel = all, paused = False, color = blue }
   print all
   return initialState
 
