@@ -10,15 +10,15 @@ import Data.Fixed
 import Data.List
 import Data.Maybe
 
-fps = 2
+fps = 20
 numLevels = 4
 pointsPerLevel = 10
-width = 420 -- 28 * 15
+width = 765 -- 51 * 15
 height = 465 + dashboardHeight -- 31 * 15
 dashboardHeight = 20
 offset = 100
 tileSize = 15
-maxTileX = 27
+maxTileX = 50
 maxTileY = 27
 window = InWindow "Life" (width, height) (offset, offset)
 background = black
