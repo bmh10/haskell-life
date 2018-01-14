@@ -56,6 +56,9 @@ tileToCoord (x, y) = (fromIntegral x*tileSize + tileSize/2 - fromIntegral width/
 setAtIdx :: Int -> a -> [a] -> [a]
 setAtIdx idx val xs = take idx xs ++ [val] ++ drop (idx+1) xs
 
+--getCount :: (Eq a) => [a] -> a -> Int
+getAliveCount g = length $ filter (=='x') $ concat (level g)
+
 -- Rendering
 render :: LifeGame -> Picture 
 render g = pictures [renderLevel g, 
@@ -64,7 +67,7 @@ render g = pictures [renderLevel g,
 renderDashboard :: LifeGame -> Picture
 renderDashboard g = statsPic
   where
-    statsPic = color white $ translate (-30) (-fromIntegral height/2 + 5) $ scale 0.1 0.1 $ text $ "FPS: " ++ show fps ++ " Alive: ?"
+    statsPic = color white $ translate (-30) (-fromIntegral height/2 + 5) $ scale 0.1 0.1 $ text $ "FPS: " ++ show fps ++ " Alive: " ++ show (getAliveCount g)
 
 renderLevel :: LifeGame -> Picture
 renderLevel game = renderLines (level game) 0
