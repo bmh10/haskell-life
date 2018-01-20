@@ -6,5 +6,11 @@ haskell-life
 TODO
 ----
 - Add more seeds
-- Detect when stable state reached
+- Detect when stable state reached (using multiple prev frames)
 - Add optional fade out - each live cell fades over time if no change
+
+Reference: https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life
+
+seed2 = Gosper's Glider Gun
+seed3 = Still lifes
+seed4 = Oscillators

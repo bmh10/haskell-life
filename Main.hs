@@ -10,8 +10,8 @@ import Data.Fixed
 import Data.List
 import Data.Maybe
 
-fps = 20
-numSeeds = 2
+fps = 2
+numSeeds = 4
 width = 765 -- 51 * 15
 height = 465 + dashboardHeight -- 31 * 15
 dashboardHeight = 20
