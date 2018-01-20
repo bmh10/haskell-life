@@ -72,9 +72,11 @@ render g = pictures [renderLevel g,
                      renderDashboard g]
 
 renderDashboard :: LifeGame -> Picture
-renderDashboard g = statsPic
+renderDashboard g = G2.color white $ translate (-80) (-fromIntegral height/2 + 5) $ scale 0.1 0.1 $ text $ wrapAround ++ fpsCount ++ aliveCount
   where
-    statsPic = G2.color white $ translate (-30) (-fromIntegral height/2 + 5) $ scale 0.1 0.1 $ text $ "FPS: " ++ show fps ++ " Alive: " ++ show (getAliveCount g)
+    fpsCount = " FPS: " ++ show fps
+    aliveCount = " Alive: " ++ show (getAliveCount g)
+    wrapAround  = " Wrap: " ++ show (wrapping g)
 
 renderLevel :: LifeGame -> Picture
 renderLevel game = renderLines (level game) 0 (colour game)
