@@ -11,7 +11,7 @@ import Data.List
 import Data.Maybe
 
 fps = 20
-numLevels = 4
+numSeeds = 2
 pointsPerLevel = 10
 width = 765 -- 51 * 15
 height = 465 + dashboardHeight -- 31 * 15
@@ -25,7 +25,8 @@ background = black
 
 data LifeGame = Game
   { 
-    level :: [String],
+    allLevels :: [[String]],
+    currentLevel :: [String],
     initialLevel :: [String],
     paused :: Bool,
     wrapping :: Bool,
@@ -47,14 +48,14 @@ getTileWrapped x y g = getTile wx wy g
     wy = wrapy y
 
 getTile :: Int -> Int -> LifeGame -> Char
-getTile x y g = (level g) !! y !! x
+getTile x y g = (currentLevel g) !! y !! x
 
 setTileDead x y g = setTile x y '_' g
 setTileAlive x y g = setTile x y 'x' g
 
 setTile :: Int -> Int -> Char -> LifeGame -> LifeGame
-setTile x y c g = g { level = updatedLevel}
-  where updatedLevel = setAtIdx y (setAtIdx x c ((level g) !! y)) (level g)
+setTile x y c g = g { currentLevel = updatedLevel}
+  where updatedLevel = setAtIdx y (setAtIdx x c ((currentLevel g) !! y)) (currentLevel g)
 
 -- Map tile coords ((0,0) is top-left tile) to actual screen coords ((0, 0) is center of screen)
 tileToCoord :: (Int, Int) -> (Float, Float) 
@@ -64,7 +65,7 @@ setAtIdx :: Int -> a -> [a] -> [a]
 setAtIdx idx val xs = take idx xs ++ [val] ++ drop (idx+1) xs
 
 --getCount :: (Eq a) => [a] -> a -> Int
-getAliveCount g = length $ filter (=='x') $ concat (level g)
+getAliveCount g = length $ filter (=='x') $ concat (currentLevel g)
 
 -- Rendering
 render :: LifeGame -> Picture 
@@ -79,7 +80,7 @@ renderDashboard g = G2.color white $ translate (-80) (-fromIntegral height/2 + 5
     wrapAround  = " Wrap: " ++ show (wrapping g)
 
 renderLevel :: LifeGame -> Picture
-renderLevel game = renderLines (level game) 0 (colour game)
+renderLevel game = renderLines (currentLevel game) 0 (colour game)
 
 renderLines :: [String] -> Int -> G2.Color -> Picture
 renderLines [] _ _ = blank
@@ -135,7 +136,7 @@ wrap p max
 inRangeXY x y = inRange x maxTileX && inRange y maxTileY
 inRange p max = p >= 0 && p <= max
 
-resetLevel g = g { level = (initialLevel g) }
+resetLevel g = g { currentLevel = (initialLevel g) }
 nextColour g  = g { colour = incColour (colour g)}
   where 
     incColour c
@@ -144,10 +145,11 @@ nextColour g  = g { colour = incColour (colour g)}
       | c == green = blue 
 
 initTiles = do 
-  fileContents <- readFile "seed2.txt"
-  let all = words fileContents
+  let fileNames = map (\x -> "seed" ++ show x ++ ".txt") [1..numSeeds]
+  fileContents <- mapM readFile fileNames
+  let all = map words fileContents
  
-  let initialState = Game { level = all, initialLevel = all, paused = False, wrapping = True, colour = blue }
+  let initialState = Game { allLevels = all, currentLevel = all !! 0, initialLevel = all !! 0, paused = False, wrapping = True, colour = blue }
   print all
   return initialState
 
