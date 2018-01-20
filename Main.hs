@@ -34,8 +34,7 @@ data LifeGame = Game
 
 -- Tile functions
 isTileAlive x y g 
- | (wrapping g) || inRangeXY x y = getTileWrapped x y g == 'x'
- | otherwise = False
+ = ((wrapping g) || inRangeXY x y) && (getTileWrapped x y g == 'x')
 
 numNeighbours x y g = length $ filter (==True) $ map (\(x,y) -> isTileAlive x y g) $ neighbours x y 
 
@@ -63,7 +62,6 @@ tileToCoord (x, y) = (fromIntegral x*tileSize + tileSize/2 - fromIntegral width/
 setAtIdx :: Int -> a -> [a] -> [a]
 setAtIdx idx val xs = take idx xs ++ [val] ++ drop (idx+1) xs
 
---getCount :: (Eq a) => [a] -> a -> Int
 getAliveCount g = length $ filter (=='x') $ concat (currentLevel g)
 
 -- Rendering
@@ -99,10 +97,10 @@ renderTile c x y col
 
 -- Event handling
 handleKeys :: Event -> LifeGame -> LifeGame
-handleKeys (EventKey (Char 'p') Down _ _) g = g { paused = not (paused g) }
+handleKeys (EventKey (Char 'p') Down _ _) g = togglePaused g
 handleKeys (EventKey (Char 'r') Down _ _) g = resetLevel g
 handleKeys (EventKey (Char 'c') Down _ _) g = nextColour g
-handleKeys (EventKey (Char 'w') Down _ _) g = g { wrapping = not (wrapping g) }
+handleKeys (EventKey (Char 'w') Down _ _) g = toggleWrapping g
 handleKeys (EventKey (Char 'n') Down _ _) g = nextLevel g
 handleKeys _ game = game
 
@@ -137,6 +135,8 @@ wrap p max
 inRangeXY x y = inRange x maxTileX && inRange y maxTileY
 inRange p max = p >= 0 && p <= max
 
+togglePaused g = g { paused = not (paused g) }
+toggleWrapping g = g { wrapping = not (wrapping g) }
 nextLevel g = resetLevel $ g { currentLevelIdx = wrap ((currentLevelIdx g)+1) (numSeeds-1) }
 resetLevel g = g { currentLevel = (allLevels g) !! (currentLevelIdx g) }
 nextColour g  = g { colour = incColour (colour g)}
