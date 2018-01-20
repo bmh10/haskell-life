@@ -14,6 +14,7 @@ fps = 20
 numSeeds = 2
 width = 765 -- 51 * 15
 height = 465 + dashboardHeight -- 31 * 15
+dashboardHeight = 20
 offset = 100
 tileSize = 15
 maxTileX = 50
@@ -71,11 +72,12 @@ render g = pictures [renderLevel g,
                      renderDashboard g]
 
 renderDashboard :: LifeGame -> Picture
-renderDashboard g = G2.color white $ translate (-80) (-fromIntegral height/2 + 5) $ scale 0.1 0.1 $ text $ wrapAround ++ fpsCount ++ aliveCount
+renderDashboard g = G2.color white $ translate (-80) (-fromIntegral height/2 + 5) $ scale 0.1 0.1 $ text $ seedNum ++ wrapAround ++ fpsCount ++ aliveCount
   where
     fpsCount = " FPS: " ++ show fps
     aliveCount = " Alive: " ++ show (getAliveCount g)
     wrapAround  = " Wrap: " ++ show (wrapping g)
+    seedNum  = " Seed: " ++ show ((currentLevelIdx g)+1)
 
 renderLevel :: LifeGame -> Picture
 renderLevel game = renderLines (currentLevel game) 0 (colour game)
