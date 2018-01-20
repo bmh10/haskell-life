@@ -33,14 +33,18 @@ data LifeGame = Game
   } deriving Show 
 
 -- Tile functions
-isTileAlive x y g = getTile wx wy g == 'x'
-  where
-    wx = wrapx x
-    wy = wrapy y
+isTileAlive x y g 
+ | (wrapping g) || inRangeXY x y = getTileWrapped x y g == 'x'
+ | otherwise = False
 
 numNeighbours x y g = length $ filter (==True) $ map (\(x,y) -> isTileAlive x y g) $ neighbours x y 
 
 neighbours x y = [(x-1, y-1), (x-1, y), (x-1, y+1), (x, y-1), (x, y+1), (x+1, y-1), (x+1, y), (x+1, y+1)]
+
+getTileWrapped x y g = getTile wx wy g
+  where
+    wx = wrapx x
+    wy = wrapy y
 
 getTile :: Int -> Int -> LifeGame -> Char
 getTile x y g = (level g) !! y !! x
@@ -121,11 +125,13 @@ updateCell x y g g'
 
 wrapx x = wrap x maxTileX
 wrapy y = wrap y maxTileY
-
 wrap p max
  | p < 0 = max
  | p > max = 0
  | otherwise = p
+
+inRangeXY x y = inRange x maxTileX && inRange y maxTileY
+inRange p max = p >= 0 && p <= max
 
 resetLevel g = g { level = (initialLevel g) }
 nextColour g  = g { colour = incColour (colour g)}
