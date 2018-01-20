@@ -28,6 +28,7 @@ data LifeGame = Game
     level :: [String],
     initialLevel :: [String],
     paused :: Bool,
+    wrapping :: Bool,
     colour :: G2.Color
   } deriving Show 
 
@@ -91,9 +92,10 @@ renderTile c x y col
 
 -- Event handling
 handleKeys :: Event -> LifeGame -> LifeGame
-handleKeys (EventKey (Char 'p') Down _ _) g = g {paused = not (paused g)}
+handleKeys (EventKey (Char 'p') Down _ _) g = g { paused = not (paused g) }
 handleKeys (EventKey (Char 'r') Down _ _) g = resetLevel g
 handleKeys (EventKey (Char 'c') Down _ _) g = nextColour g
+handleKeys (EventKey (Char 'w') Down _ _) g = g { wrapping = not (wrapping g) }
 handleKeys _ game = game
 
 update :: Float -> LifeGame -> LifeGame
@@ -137,7 +139,7 @@ initTiles = do
   fileContents <- readFile "seed2.txt"
   let all = words fileContents
  
-  let initialState = Game { level = all, initialLevel = all, paused = False, colour = blue }
+  let initialState = Game { level = all, initialLevel = all, paused = False, wrapping = True, colour = blue }
   print all
   return initialState
 
