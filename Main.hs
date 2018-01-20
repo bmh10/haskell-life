@@ -27,7 +27,7 @@ data LifeGame = Game
   { 
     allLevels :: [[String]],
     currentLevel :: [String],
-    initialLevel :: [String],
+    currentLevelIdx :: Int,
     paused :: Bool,
     wrapping :: Bool,
     colour :: G2.Color
@@ -103,6 +103,7 @@ handleKeys (EventKey (Char 'p') Down _ _) g = g { paused = not (paused g) }
 handleKeys (EventKey (Char 'r') Down _ _) g = resetLevel g
 handleKeys (EventKey (Char 'c') Down _ _) g = nextColour g
 handleKeys (EventKey (Char 'w') Down _ _) g = g { wrapping = not (wrapping g) }
+handleKeys (EventKey (Char 'n') Down _ _) g = nextLevel g
 handleKeys _ game = game
 
 update :: Float -> LifeGame -> LifeGame
@@ -136,7 +137,8 @@ wrap p max
 inRangeXY x y = inRange x maxTileX && inRange y maxTileY
 inRange p max = p >= 0 && p <= max
 
-resetLevel g = g { currentLevel = (initialLevel g) }
+nextLevel g = resetLevel $ g { currentLevelIdx = wrap ((currentLevelIdx g)+1) (numSeeds-1) }
+resetLevel g = g { currentLevel = (allLevels g) !! (currentLevelIdx g) }
 nextColour g  = g { colour = incColour (colour g)}
   where 
     incColour c
@@ -149,7 +151,7 @@ initTiles = do
   fileContents <- mapM readFile fileNames
   let all = map words fileContents
  
-  let initialState = Game { allLevels = all, currentLevel = all !! 0, initialLevel = all !! 0, paused = False, wrapping = True, colour = blue }
+  let initialState = Game { allLevels = all, currentLevel = all !! 0, currentLevelIdx = 0, paused = False, wrapping = True, colour = blue }
   print all
   return initialState
 
