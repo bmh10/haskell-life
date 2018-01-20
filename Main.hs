@@ -29,7 +29,9 @@ data LifeGame = Game
     currentLevelIdx :: Int,
     paused :: Bool,
     wrapping :: Bool,
-    colour :: G2.Color
+    colour :: G2.Color,
+    aliveCount :: Int,
+    prevAliveCount :: Int
   } deriving Show 
 
 -- Tile functions
@@ -70,12 +72,13 @@ render g = pictures [renderLevel g,
                      renderDashboard g]
 
 renderDashboard :: LifeGame -> Picture
-renderDashboard g = G2.color white $ translate (-80) (-fromIntegral height/2 + 5) $ scale 0.1 0.1 $ text $ seedNum ++ wrapAround ++ fpsCount ++ aliveCount
+renderDashboard g = G2.color white $ translate (-80) (-fromIntegral height/2 + 5) $ scale 0.1 0.1 $ text $ seedNum ++ wrapAround ++ fpsCount ++ aliveCells ++ isStable
   where
     fpsCount = " FPS: " ++ show fps
-    aliveCount = " Alive: " ++ show (getAliveCount g)
+    aliveCells = " Alive: " ++ show (aliveCount g)
     wrapAround  = " Wrap: " ++ show (wrapping g)
     seedNum  = " Seed: " ++ show ((currentLevelIdx g)+1)
+    isStable = " Stable: " ++ show ((aliveCount g) == (prevAliveCount g))
 
 renderLevel :: LifeGame -> Picture
 renderLevel game = renderLines (currentLevel game) 0 (colour game)
@@ -107,7 +110,10 @@ handleKeys _ game = game
 update :: Float -> LifeGame -> LifeGame
 update secs game
  | (paused game)               = game
- | otherwise                   = updateLevel game
+ | otherwise                   = updateState $ updateLevel game
+
+updateState :: LifeGame -> LifeGame
+updateState g = g { aliveCount = (getAliveCount g), prevAliveCount = (aliveCount g) }
 
 updateLevel :: LifeGame -> LifeGame
 updateLevel g = foldr (\(x,y) -> updateCell x y g) g' coords
@@ -151,7 +157,7 @@ initTiles = do
   fileContents <- mapM readFile fileNames
   let all = map words fileContents
  
-  let initialState = Game { allLevels = all, currentLevel = all !! 0, currentLevelIdx = 0, paused = False, wrapping = True, colour = blue }
+  let initialState = Game { allLevels = all, currentLevel = all !! 0, currentLevelIdx = 0, paused = False, wrapping = True, colour = blue, aliveCount = 0, prevAliveCount = 0 }
   print all
   return initialState
 
