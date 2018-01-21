@@ -10,7 +10,7 @@ import Data.Fixed
 import Data.List
 import Data.Maybe
 
-fps = 2
+fps = 20
 numSeeds = 4
 width = 765 -- 51 * 15
 height = 465 + dashboardHeight -- 31 * 15
@@ -24,8 +24,8 @@ background = black
 
 data LifeGame = Game
   { 
-    allLevels :: [[String]],
-    currentLevel :: [String],
+    allLevels :: [[[Float]]],
+    currentLevel :: [[Float]],
     currentLevelIdx :: Int,
     paused :: Bool,
     wrapping :: Bool,
@@ -36,7 +36,7 @@ data LifeGame = Game
 
 -- Tile functions
 isTileAlive x y g 
- = ((wrapping g) || inRangeXY x y) && (getTileWrapped x y g == 'x')
+ = ((wrapping g) || inRangeXY x y) && (getTileWrapped x y g > 0)
 
 numNeighbours x y g = length $ filter (==True) $ map (\(x,y) -> isTileAlive x y g) $ neighbours x y 
 
@@ -47,13 +47,13 @@ getTileWrapped x y g = getTile wx wy g
     wx = wrapx x
     wy = wrapy y
 
-getTile :: Int -> Int -> LifeGame -> Char
+getTile :: Int -> Int -> LifeGame -> Float
 getTile x y g = (currentLevel g) !! y !! x
 
-setTileDead x y g = setTile x y '_' g
-setTileAlive x y g = setTile x y 'x' g
+setTileDead x y g = setTile x y 0 g
+setTileAlive x y g = setTile x y 1 g
 
-setTile :: Int -> Int -> Char -> LifeGame -> LifeGame
+setTile :: Int -> Int -> Float -> LifeGame -> LifeGame
 setTile x y c g = g { currentLevel = updatedLevel}
   where updatedLevel = setAtIdx y (setAtIdx x c ((currentLevel g) !! y)) (currentLevel g)
 
@@ -64,7 +64,7 @@ tileToCoord (x, y) = (fromIntegral x*tileSize + tileSize/2 - fromIntegral width/
 setAtIdx :: Int -> a -> [a] -> [a]
 setAtIdx idx val xs = take idx xs ++ [val] ++ drop (idx+1) xs
 
-getAliveCount g = length $ filter (=='x') $ concat (currentLevel g)
+getAliveCount g = length $ filter (>0) $ concat (currentLevel g)
 
 -- Rendering
 render :: LifeGame -> Picture 
@@ -83,17 +83,17 @@ renderDashboard g = G2.color white $ translate (-80) (-fromIntegral height/2 + 5
 renderLevel :: LifeGame -> Picture
 renderLevel game = renderLines (currentLevel game) 0 (colour game)
 
-renderLines :: [String] -> Int -> G2.Color -> Picture
+renderLines :: [[Float]] -> Int -> G2.Color -> Picture
 renderLines [] _ _ = blank
 renderLines (l:ls) y c = pictures [renderLine l 0 y c, renderLines ls (y+1) c]
 
-renderLine :: String -> Int -> Int -> G2.Color -> Picture
+renderLine :: [Float] -> Int -> Int -> G2.Color -> Picture
 renderLine [] _ _ _      = blank
 renderLine (t:ts) x y c  = pictures [renderTile t x y c, renderLine ts (x+1) y c]
 
-renderTile :: Char -> Int -> Int -> G2.Color -> Picture
+renderTile :: Float -> Int -> Int -> G2.Color -> Picture
 renderTile c x y col
- | c == 'x'  = translate x' y' $ G2.color col $ rectangleSolid (tileSize-1) (tileSize-1)
+ | c > 0  = translate x' y' $ G2.color col $ rectangleSolid (tileSize-1) (tileSize-1)
  | otherwise = blank
   where
     (x', y') = tileToCoord (x, y)
@@ -152,10 +152,17 @@ nextColour g  = g { colour = incColour (colour g)}
       | c == red   = green
       | c == green = blue 
 
+levelToAlpha :: [String] -> [[Float]]
+levelToAlpha xs = map toAlpha xs
+
+toAlpha :: String -> [Float]
+toAlpha [] = []
+toAlpha (c:cs) = (if c == '_' then 0 else 1) : toAlpha cs
+
 initTiles = do 
   let fileNames = map (\x -> "seed" ++ show x ++ ".txt") [1..numSeeds]
   fileContents <- mapM readFile fileNames
-  let all = map words fileContents
+  let all = map (levelToAlpha . words) fileContents
  
   let initialState = Game { allLevels = all, currentLevel = all !! 0, currentLevelIdx = 0, paused = False, wrapping = True, colour = blue, aliveCount = 0, prevAliveCount = 0 }
   print all
