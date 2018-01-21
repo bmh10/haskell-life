@@ -19,6 +19,7 @@ offset = 100
 tileSize = 15
 maxTileX = 50
 maxTileY = 27
+dimPerFrame = 0.05
 window = InWindow "Life" (width, height) (offset, offset)
 background = black
 
@@ -52,6 +53,10 @@ getTile x y g = (currentLevel g) !! y !! x
 
 setTileDead x y g = setTile x y 0 g
 setTileAlive x y g = setTile x y 1 g
+dimTile x y g = setTile x y alpha' g
+  where
+    alpha  = getTile  x y g
+    alpha' = alpha - dimPerFrame
 
 setTile :: Int -> Int -> Float -> LifeGame -> LifeGame
 setTile x y c g = g { currentLevel = updatedLevel}
@@ -121,16 +126,16 @@ updateLevel :: LifeGame -> LifeGame
 updateLevel g = foldr (\(x,y) -> updateCell x y g) g' coords
   where
     coords = [(x, y) | x <- [0..maxTileX], y <- [0..maxTileY]]
-    g' = g -- g is initial state, g' is next state
+    g' = g -- g is initial/current state, g' is next/updated state
 
 updateCell x y g g'
  | live && neighbours < 2 = setTileDead x y g'
- | live && neighbours >= 2 && neighbours <= 3 = g'
+ | live && neighbours >= 2 && neighbours <= 3 = dimTile x y g'
  | live && neighbours > 3 = setTileDead x y g'
  | not live && neighbours == 3 = setTileAlive x y g'
- | otherwise = g'
+ | otherwise = dimTile x y g'
   where 
-    live = isTileAlive x y g
+    live       = isTileAlive x y g
     neighbours = numNeighbours x y g
 
 wrapx x = wrap x maxTileX
