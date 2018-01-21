@@ -78,11 +78,12 @@ render g = pictures [renderLevel g,
                      renderDashboard g]
 
 renderDashboard :: LifeGame -> Picture
-renderDashboard g = G2.color white $ translate (-80) (-fromIntegral height/2 + 5) $ scale 0.1 0.1 $ text $ seedNum ++ wrapAround ++ fpsCount ++ aliveCells ++ isStable
+renderDashboard g = G2.color white $ translate (-250) (-fromIntegral height/2 + 5) $ scale 0.1 0.1 $ text $ seedNum ++ wrapAround ++ dimmingEnabled ++ fpsCount ++ aliveCells ++ isStable
   where
     fpsCount = " FPS: " ++ show fps
     aliveCells = " Alive: " ++ show (aliveCount g)
     wrapAround  = " Wrap: " ++ show (wrapping g)
+    dimmingEnabled  = " Dimming: " ++ show (dimming g)
     seedNum  = " Seed: " ++ show ((currentLevelIdx g)+1)
     isStable = " Stable: " ++ show ((aliveCount g) == (prevAliveCount g))
 
