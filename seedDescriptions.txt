@@ -1,0 +1,4 @@
+Misc
+Gosper's Glider Gun
+Still lifes
+Oscillators

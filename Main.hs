@@ -28,6 +28,7 @@ data LifeGame = Game
     allLevels :: [[[Float]]],
     currentLevel :: [[Float]],
     currentLevelIdx :: Int,
+    levelDescriptions :: [String],
     paused :: Bool,
     wrapping :: Bool,
     dimming :: Bool,
@@ -78,14 +79,14 @@ render g = pictures [renderLevel g,
                      renderDashboard g]
 
 renderDashboard :: LifeGame -> Picture
-renderDashboard g = G2.color white $ translate (-250) (-fromIntegral height/2 + 5) $ scale 0.1 0.1 $ text $ seedNum ++ wrapAround ++ dimmingEnabled ++ isPaused ++ fpsCount ++ aliveCells ++ isStable
+renderDashboard g = G2.color white $ translate (-300) (-fromIntegral height/2 + 5) $ scale 0.1 0.1 $ text $ seedNum ++ wrapAround ++ dimmingEnabled ++ isPaused ++ fpsCount ++ aliveCells ++ isStable
   where
     fpsCount = " FPS: " ++ show fps
     aliveCells = " Alive: " ++ show (aliveCount g)
-    isPaused  = " Paused: " ++ show (paused g)
+    isPaused  = " Pause: " ++ show (paused g)
     wrapAround  = " Wrap: " ++ show (wrapping g)
-    dimmingEnabled  = " Dimming: " ++ show (dimming g)
-    seedNum  = " Seed: " ++ show ((currentLevelIdx g)+1)
+    dimmingEnabled  = " Dim: " ++ show (dimming g)
+    seedNum  = " Seed: " ++ show ((currentLevelIdx g)+1) ++ ": " ++ show ((levelDescriptions g) !! (currentLevelIdx g))
     isStable = " Stable: " ++ show ((aliveCount g) == (prevAliveCount g))
 
 renderLevel :: LifeGame -> Picture
@@ -177,9 +178,11 @@ toAlpha (c:cs) = (if c == '_' then 0 else 1) : toAlpha cs
 initTiles = do 
   let fileNames = map (\x -> "seed" ++ show x ++ ".txt") [1..numSeeds]
   fileContents <- mapM readFile fileNames
+  descriptionContents <- readFile "seedDescriptions.txt"
   let all = map (levelToAlpha . words) fileContents
+  let descriptions = lines descriptionContents
  
-  let initialState = Game { allLevels = all, currentLevel = all !! 0, currentLevelIdx = 0, paused = False, wrapping = True, dimming = False, colour = blue, aliveCount = 0, prevAliveCount = 0 }
+  let initialState = Game { allLevels = all, currentLevel = all !! 0, currentLevelIdx = 0, levelDescriptions = descriptions, paused = False, wrapping = True, dimming = False, colour = blue, aliveCount = 0, prevAliveCount = 0 }
   print all
   return initialState
 
