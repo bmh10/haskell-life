@@ -30,6 +30,7 @@ data LifeGame = Game
     currentLevelIdx :: Int,
     paused :: Bool,
     wrapping :: Bool,
+    dimming :: Bool,
     colour :: G2.Color,
     aliveCount :: Int,
     prevAliveCount :: Int
@@ -55,8 +56,8 @@ setTileDead x y g = setTile x y 0 g
 setTileAlive x y g = setTile x y 1 g
 dimTile x y g = setTile x y alpha' g
   where
-    alpha  = getTile  x y g
-    alpha' = alpha - dimPerFrame
+    alpha  = getTile x y g
+    alpha' = if (dimming g) then alpha - dimPerFrame else alpha
 
 setTile :: Int -> Int -> Float -> LifeGame -> LifeGame
 setTile x y c g = g { currentLevel = updatedLevel}
@@ -108,9 +109,10 @@ renderTile c x y col
 -- Event handling
 handleKeys :: Event -> LifeGame -> LifeGame
 handleKeys (EventKey (Char 'p') Down _ _) g = togglePaused g
+handleKeys (EventKey (Char 'w') Down _ _) g = toggleWrapping g
+handleKeys (EventKey (Char 'd') Down _ _) g = toggleDimming g
 handleKeys (EventKey (Char 'r') Down _ _) g = resetLevel g
 handleKeys (EventKey (Char 'c') Down _ _) g = nextColour g
-handleKeys (EventKey (Char 'w') Down _ _) g = toggleWrapping g
 handleKeys (EventKey (Char 'n') Down _ _) g = nextLevel g
 handleKeys _ game = game
 
@@ -148,10 +150,14 @@ wrap p max
 inRangeXY x y = inRange x maxTileX && inRange y maxTileY
 inRange p max = p >= 0 && p <= max
 
-togglePaused g = g { paused = not (paused g) }
+togglePaused   g = g { paused   = not (paused g) }
 toggleWrapping g = g { wrapping = not (wrapping g) }
+toggleDimming  g = g { dimming  = not (dimming g) }
+
 nextLevel g = resetLevel $ g { currentLevelIdx = wrap ((currentLevelIdx g)+1) (numSeeds-1) }
+
 resetLevel g = g { currentLevel = (allLevels g) !! (currentLevelIdx g) }
+
 nextColour g  = g { colour = incColour (colour g)}
   where 
     incColour c
@@ -171,7 +177,7 @@ initTiles = do
   fileContents <- mapM readFile fileNames
   let all = map (levelToAlpha . words) fileContents
  
-  let initialState = Game { allLevels = all, currentLevel = all !! 0, currentLevelIdx = 0, paused = False, wrapping = True, colour = blue, aliveCount = 0, prevAliveCount = 0 }
+  let initialState = Game { allLevels = all, currentLevel = all !! 0, currentLevelIdx = 0, paused = False, wrapping = True, dimming = False, colour = blue, aliveCount = 0, prevAliveCount = 0 }
   print all
   return initialState
 
