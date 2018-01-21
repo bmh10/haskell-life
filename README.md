@@ -6,6 +6,7 @@ haskell-life
 TODO
 ----
 - Add more seeds
+- Incorporate description into seed file
 - Detect when stable state reached (using multiple prev frames)
 - Add optional fade out - each live cell fades over time if no change
 

@@ -93,10 +93,12 @@ renderLine (t:ts) x y c  = pictures [renderTile t x y c, renderLine ts (x+1) y c
 
 renderTile :: Float -> Int -> Int -> G2.Color -> Picture
 renderTile c x y col
- | c > 0  = translate x' y' $ G2.color col $ rectangleSolid (tileSize-1) (tileSize-1)
+ | c > 0  = translate x' y' $ G2.color col' $ rectangleSolid (tileSize-1) (tileSize-1)
  | otherwise = blank
   where
     (x', y') = tileToCoord (x, y)
+    (r, g, b, a) = rgbaOfColor col
+    col' = makeColor r g b c
 
 -- Event handling
 handleKeys :: Event -> LifeGame -> LifeGame
